@@ -369,8 +369,8 @@ func storeScannedHost(nmapHost NmapHost) (*clientpb.HostScanResult, error) {
 		// Store services in extension data
 		servicesJSON, _ := json.Marshal(result.Services)
 		existingHost.ExtensionData = append(existingHost.ExtensionData, models.ExtensionData{
-			Key:   "scan_services",
-			Value: string(servicesJSON),
+			Name:   "scan_services",
+			Output: string(servicesJSON),
 		})
 
 		if err := dbSession.Save(existingHost).Error; err != nil {
