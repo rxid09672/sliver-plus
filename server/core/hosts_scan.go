@@ -394,16 +394,16 @@ func storeScannedHost(nmapHost NmapHost) (*clientpb.HostScanResult, error) {
 			IOCs:      []models.IOC{},
 			ExtensionData: []models.ExtensionData{
 				{
-					Key:   "scan_ip",
-					Value: nmapHost.Address,
+					Name:   "scan_ip",
+					Output: nmapHost.Address,
 				},
 				{
-					Key:   "scan_services",
-					Value: string(servicesJSON),
+					Name:   "scan_services",
+					Output: string(servicesJSON),
 				},
 				{
-					Key:   "discovery_method",
-					Value: "network_scan",
+					Name:   "discovery_method",
+					Output: "network_scan",
 				},
 			},
 		}
