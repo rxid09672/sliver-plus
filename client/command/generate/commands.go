@@ -385,7 +385,7 @@ func compileImplantFlags(name string, cmd *cobra.Command) {
 // diversityImplantFlags adds build diversity flags for metamorphic generation
 func diversityImplantFlags(name string, cmd *cobra.Command) {
 	flags.Bind(name, false, cmd, func(f *pflag.FlagSet) {
-		f.BoolP("diversity", "D", false, "enable build diversity (metamorphic code generation)")
+		f.Bool("diversity", false, "enable build diversity (metamorphic code generation)")
 		f.Bool("novel-techniques", false, "use Wig Vector Space Metamorphism (requires --diversity)")
 		f.String("seed", "", "reproducible seed for deterministic builds (optional)")
 		f.Float64("min-novelty", 0.5, "minimum novelty score for alien pattern generation (0.0-1.0, default 0.5)")
