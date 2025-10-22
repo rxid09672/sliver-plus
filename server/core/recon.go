@@ -11,10 +11,9 @@ import (
 	"time"
 
 	"github.com/bishopfox/sliver/protobuf/clientpb"
-	"github.com/bishopfox/sliver/server/db"
-	"github.com/bishopfox/sliver/server/db/models"
+	"github.com/bishopfox/sliver/protobuf/commonpb"
+	"github.com/bishopfox/sliver/server/loot"
 	"github.com/bishopfox/sliver/server/log"
-	"github.com/gofrs/uuid"
 )
 
 var (
@@ -264,7 +263,6 @@ func isValidEmail(email string) bool {
 func storeLoot(reconType, target string, data *ReconData) (string, int, error) {
 	// Generate loot name
 	lootName := fmt.Sprintf("%s_%s_%s", target, reconType, time.Now().Format("20060102_150405"))
-	lootType := fmt.Sprintf("recon/%s", reconType)
 
 	// Serialize data to JSON
 	jsonData, err := json.Marshal(data)
@@ -272,30 +270,28 @@ func storeLoot(reconType, target string, data *ReconData) (string, int, error) {
 		return "", 0, fmt.Errorf("failed to marshal recon data: %v", err)
 	}
 
-	// Create loot entry
-	lootID, err := uuid.NewV4()
-	if err != nil {
-		return "", 0, fmt.Errorf("failed to generate UUID: %v", err)
-	}
-
-	loot := &models.Loot{
-		LootID:   lootID,
+	// Create loot entry using Sliver's LootStore API
+	lootStore := loot.GetLootStore()
+	lootMessage := &clientpb.Loot{
 		Name:     lootName,
-		FileType: lootType,
-		Data:     jsonData,
+		FileType: clientpb.FileType_TEXT, // Store as text/JSON
+		File: &commonpb.File{
+			Name: lootName + ".json",
+			Data: jsonData,
+		},
 	}
 
-	dbSession := db.Session()
-	if err := dbSession.Create(loot).Error; err != nil {
+	storedLoot, err := lootStore.Add(lootMessage)
+	if err != nil {
 		return "", 0, fmt.Errorf("failed to save loot: %v", err)
 	}
 
 	// Calculate total items found
 	itemsFound := len(data.Subdomains) + len(data.Emails) + len(data.IPs)
 
-	reconLog.Infof("Stored recon data as loot: %s (%d items)", lootID.String(), itemsFound)
+	reconLog.Infof("Stored recon data as loot: %s (%d items)", storedLoot.ID, itemsFound)
 
-	return lootID.String(), itemsFound, nil
+	return storedLoot.ID, itemsFound, nil
 }
 
 func isToolAvailable(tool string) bool {
