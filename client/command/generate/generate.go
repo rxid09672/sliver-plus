@@ -300,6 +300,27 @@ func parseCompileFlags(cmd *cobra.Command, con *console.SliverClient) (string, *
 		con.PrintErrorf("--min-novelty must be between 0.0 and 1.0 (got %.2f)\n", minNovelty)
 		return "", nil
 	}
+	
+	// TLS Fingerprinting flags (Milestone D)
+	tlsFingerprint, _ := cmd.Flags().GetBool("tls-fingerprint")
+	tlsBrowser, _ := cmd.Flags().GetString("tls-browser")
+	
+	// Validate TLS fingerprint browser choice
+	validBrowsers := []string{"chrome", "firefox", "ios", "android", "edge", "safari", "safari-ios", "safari-macos"}
+	if tlsFingerprint {
+		browserValid := false
+		tlsBrowser = strings.ToLower(tlsBrowser)
+		for _, valid := range validBrowsers {
+			if tlsBrowser == valid {
+				browserValid = true
+				break
+			}
+		}
+		if !browserValid {
+			con.PrintErrorf("Invalid TLS browser: %s (must be one of: chrome, firefox, ios, android, edge, safari)\n", tlsBrowser)
+			return "", nil
+		}
+	}
 
 	isSharedLib := false
 	isService := false
@@ -455,6 +476,13 @@ func parseCompileFlags(cmd *cobra.Command, con *console.SliverClient) (string, *
 			con.PrintInfof("Using reproducible seed: %s\n", seed)
 		}
 		con.PrintInfof("Minimum novelty score: %.2f\n", minNovelty)
+	}
+	
+	// Add TLS fingerprinting configuration if enabled (Milestone D)
+	if tlsFingerprint {
+		config.EnableTLSFingerprinting = true
+		config.TLSFingerprint = tlsBrowser
+		con.PrintInfof("TLS fingerprinting enabled: mimicking %s browser\n", tlsBrowser)
 	}
 
 	return name, config

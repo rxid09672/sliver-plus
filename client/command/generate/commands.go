@@ -332,6 +332,10 @@ func coreImplantFlags(name string, cmd *cobra.Command) {
 		f.StringP("strategy", "Z", "", "specify a connection strategy (r = random, rd = random domain, s = sequential)")
 		f.Int64P("reconnect", "j", DefaultReconnect, "attempt to reconnect every n second(s)")
 		f.Int64P("poll-timeout", "P", DefaultPollTimeout, "long poll request timeout")
+		
+		// TLS Fingerprinting (Milestone D)
+		f.Bool("tls-fingerprint", false, "enable TLS fingerprinting to evade network detection")
+		f.String("tls-browser", "chrome", "browser to mimic for TLS fingerprinting (chrome, firefox, ios, android, edge, safari)")
 		f.Uint32P("max-errors", "k", DefaultMaxErrors, "max number of connection errors")
 		f.StringP("c2profile", "C", consts.DefaultC2Profile, "HTTP C2 profile to use")
 
