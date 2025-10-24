@@ -1,3 +1,4 @@
+//go:build standalone
 // +build standalone
 
 package httpclient_test
@@ -15,7 +16,7 @@ func TestUTLSStandalone(t *testing.T) {
 	// Verify we can reference utls types
 	var _ *tls.UConn
 	var _ tls.ClientHelloID
-	
+
 	t.Log("✅ utls import successful")
 }
 
@@ -60,4 +61,3 @@ func TestUTLSVersionsStandalone(t *testing.T) {
 		}
 	}
 }
-
