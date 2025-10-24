@@ -511,9 +511,9 @@ func parseCompileFlags(cmd *cobra.Command, con *console.SliverClient) (string, *
 			return "", nil
 		}
 
-		con.PrintInfof("Applied Malleable C2 profile: %s v%s\n", profile.Metadata.Name, profile.Metadata.Version)
-		if profile.Metadata.Description != "" {
-			con.PrintInfof("  Description: %s\n", profile.Metadata.Description)
+		con.PrintInfof("Applied Malleable C2 profile: %s v%s\n", profile.Profile.Name, profile.Profile.Version)
+		if profile.Profile.Description != "" {
+			con.PrintInfof("  Description: %s\n", profile.Profile.Description)
 		}
 	}
 
