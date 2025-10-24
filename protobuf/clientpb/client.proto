@@ -195,6 +195,11 @@ message ImplantConfig {
   // Build Diversity Pack (fields 300+)
   bool EnableBuildDiversity = 300;
   BuildDiversityConfig DiversityConfig = 301;
+  
+  // TLS Fingerprinting (Milestone D - Network Evasion, fields 310+)
+  bool EnableTLSFingerprinting = 310;
+  string TLSFingerprint = 311;  // "chrome", "firefox", "ios", "android", "edge", "safari"
+  string MalleableC2Profile = 312;  // Path to Malleable C2 profile file (future)
 }
 
 // Build Diversity Configuration
