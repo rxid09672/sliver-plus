@@ -300,11 +300,11 @@ func parseCompileFlags(cmd *cobra.Command, con *console.SliverClient) (string, *
 		con.PrintErrorf("--min-novelty must be between 0.0 and 1.0 (got %.2f)\n", minNovelty)
 		return "", nil
 	}
-	
+
 	// TLS Fingerprinting flags (Milestone D)
 	tlsFingerprint, _ := cmd.Flags().GetBool("tls-fingerprint")
 	tlsBrowser, _ := cmd.Flags().GetString("tls-browser")
-	
+
 	// Validate TLS fingerprint browser choice
 	validBrowsers := []string{"chrome", "firefox", "ios", "android", "edge", "safari", "safari-ios", "safari-macos"}
 	if tlsFingerprint {
@@ -477,12 +477,44 @@ func parseCompileFlags(cmd *cobra.Command, con *console.SliverClient) (string, *
 		}
 		con.PrintInfof("Minimum novelty score: %.2f\n", minNovelty)
 	}
-	
+
 	// Add TLS fingerprinting configuration if enabled (Milestone D)
 	if tlsFingerprint {
 		config.EnableTLSFingerprinting = true
 		config.TLSFingerprint = tlsBrowser
 		con.PrintInfof("TLS fingerprinting enabled: mimicking %s browser\n", tlsBrowser)
+	}
+
+	// Apply Malleable C2 profile if specified (optional, parallel implementation)
+	malleableProfileName, _ := cmd.Flags().GetString("malleable-profile")
+	if malleableProfileName != "" {
+		var profile *MalleableC2Profile
+		var err error
+
+		// Check if it's a file path or a profile name
+		if _, statErr := os.Stat(malleableProfileName); statErr == nil {
+			// It's a valid file path
+			profile, err = LoadMalleableProfile(malleableProfileName)
+		} else {
+			// Try to load by name
+			profile, err = LoadMalleableProfileByName(malleableProfileName)
+		}
+
+		if err != nil {
+			con.PrintErrorf("Failed to load Malleable C2 profile: %s\n", err)
+			return "", nil
+		}
+
+		// Apply the profile to the config
+		if err := ApplyMalleableProfile(profile, config); err != nil {
+			con.PrintErrorf("Failed to apply Malleable C2 profile: %s\n", err)
+			return "", nil
+		}
+
+		con.PrintInfof("Applied Malleable C2 profile: %s v%s\n", profile.Metadata.Name, profile.Metadata.Version)
+		if profile.Metadata.Description != "" {
+			con.PrintInfof("  Description: %s\n", profile.Metadata.Description)
+		}
 	}
 
 	return name, config
