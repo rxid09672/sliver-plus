@@ -51,12 +51,20 @@ var (
 func SemanticVersion() []int {
 	semVer := []int{}
 	version := Version
+	if version == "" {
+		// Default version if not set at build time
+		version = "1.5.0"
+	}
 	if strings.HasPrefix(version, "v") {
 		version = version[1:]
 	}
 	for _, part := range strings.Split(version, ".") {
 		number, _ := strconv.Atoi(part)
 		semVer = append(semVer, number)
+	}
+	// Ensure we always have at least 3 elements (major, minor, patch)
+	for len(semVer) < 3 {
+		semVer = append(semVer, 0)
 	}
 	return semVer
 }
