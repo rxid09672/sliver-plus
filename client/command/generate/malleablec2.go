@@ -45,7 +45,11 @@ type MalleableC2Profile struct {
 				Get  []string `yaml:"get,omitempty"`
 				Post []string `yaml:"post,omitempty"`
 			} `yaml:"uris,omitempty"`
-			Headers map[string]string `yaml:"headers,omitempty"`
+			Headers *struct {
+				Common map[string]string `yaml:"common,omitempty"`
+				Get    map[string]string `yaml:"get,omitempty"`
+				Post   map[string]string `yaml:"post,omitempty"`
+			} `yaml:"headers,omitempty"`
 		} `yaml:"http,omitempty"`
 		Timing *struct {
 			Interval    int `yaml:"interval"`
