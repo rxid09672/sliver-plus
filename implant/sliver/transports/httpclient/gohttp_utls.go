@@ -122,7 +122,7 @@ func extractServerName(addr string) string {
 	return host
 }
 
-// dialWithUTLS establishes a TLS connection using utls for fingerprinting
+// dialWithUTLSHelper establishes a TLS connection using utls for fingerprinting
 //
 // This function implements custom TLS fingerprinting by:
 // 1. Establishing a TCP connection
@@ -135,10 +135,10 @@ func extractServerName(addr string) string {
 //
 // Args:
 //   ctx: Context for cancellation and deadlines
-//   g: GoHTTPDriver instance (for access to config)
 //   network: Network type ("tcp", "tcp4", "tcp6")
 //   addr: Server address in "host:port" format
 //   fingerprint: Browser to mimic (see getBrowserID)
+//   timeout: Connection timeout
 //
 // Returns:
 //   net.Conn: TLS connection with custom fingerprint
@@ -148,11 +148,11 @@ func extractServerName(addr string) string {
 //   - Uses InsecureSkipVerify: true (matches original Sliver behavior)
 //   - For C2 operations, certificate validation is typically disabled
 //   - Customize TLS config as needed for your operational requirements
-func (g *GoHTTPDriver) dialWithUTLS(ctx context.Context, network, addr, fingerprint string) (net.Conn, error) {
+func dialWithUTLSHelper(ctx context.Context, network, addr, fingerprint string, timeout time.Duration) (net.Conn, error) {
 	// Step 1: Establish TCP connection
-	// Use net.Dialer with timeout from driver config
+	// Use net.Dialer with timeout
 	dialer := &net.Dialer{
-		Timeout:   g.opts.Timeout,
+		Timeout:   timeout,
 		KeepAlive: 30 * time.Second, // Keep connection alive
 	}
 	
