@@ -13,6 +13,7 @@ require (
 	github.com/Binject/universal v0.0.0-20220519011857-bea739e758c0
 	github.com/Ne0nd0g/go-clr v1.0.3
 	github.com/alecthomas/chroma v0.10.0
+	github.com/bishopfox/sliver/implant v0.0.0-00010101000000-000000000000
 	github.com/cheggaaa/pb/v3 v3.1.7
 	github.com/chromedp/cdproto v0.0.0-20250803210736-d308e07a266d
 	github.com/chromedp/chromedp v0.14.1
@@ -183,3 +184,5 @@ require (
 	modernc.org/memory v1.11.0 // indirect
 	mvdan.cc/sh/v3 v3.12.0 // indirect
 )
+
+replace github.com/bishopfox/sliver/implant => ./implant
