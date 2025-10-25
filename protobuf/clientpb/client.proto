@@ -195,6 +195,11 @@ message ImplantConfig {
   // Build Diversity Pack (fields 300+)
   bool EnableBuildDiversity = 300;
   BuildDiversityConfig DiversityConfig = 301;
+
+  // TLS Fingerprinting (fields 310+)
+  bool EnableTLSFingerprinting = 310;
+  string TLSFingerprint = 311;
+  string MalleableC2Profile = 312;
 }
 
 // Build Diversity Configuration
