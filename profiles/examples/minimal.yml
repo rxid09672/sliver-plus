@@ -1,0 +1,20 @@
+# Minimal Sliver Malleable C2 Profile
+# This is the smallest valid profile with only required fields
+
+profile:
+  name: "Minimal Example"
+  version: "1.0"
+  
+  # Optional but recommended: Add some basic HTTP customization
+  http:
+    user_agents:
+      - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0"
+    
+    uris:
+      get: ["/"]
+      post: ["/"]
+  
+  # Optional: TLS fingerprinting (uses Chrome by default)
+  tls:
+    fingerprint: "chrome"
+

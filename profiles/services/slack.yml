@@ -1,0 +1,84 @@
+# Slack API Profile
+# Mimics Slack API and desktop client traffic
+#
+# Use Cases:
+# - Corporate chat environments
+# - Remote work infrastructure
+# - DevOps/collaboration tools
+# - Real-time messaging networks
+#
+# Based on: Slack API and desktop client patterns
+
+profile:
+  name: "Slack API"
+  author: "Sliver Team"
+  description: "Mimics Slack API and desktop client traffic"
+  version: "1.0"
+  
+  http:
+    # Slack desktop client and API User-Agents
+    user_agents:
+      - "Slack/4.29.0 Windows/10.0.19045 (x64)"
+      - "Slack-Webhooks/1.0 (+https://api.slack.com/)"
+      - "Mozilla/5.0 (compatible; Slack-Client/4.29; Win64; x64)"
+      - "slackclient/3.19.0 Python/3.10.0"
+    
+    # Slack API endpoints
+    uris:
+      get:
+        - "/api/conversations.list"
+        - "/api/users.list"
+        - "/api/conversations.history"
+        - "/api/auth.test"
+        - "/api/team.info"
+        - "/api/users.info"
+      post:
+        - "/api/chat.postMessage"
+        - "/api/files.upload"
+        - "/api/conversations.join"
+        - "/api/reactions.add"
+    
+    headers:
+      common:
+        Accept: "application/json; charset=utf-8"
+        Accept-Encoding: "gzip, deflate, br"
+        Accept-Language: "en-US,en;q=0.9"
+        User-Agent: "<from-list>"
+      
+      get:
+        Authorization: "Bearer xoxb-EXAMPLE-TOKEN-NOT-REAL"
+      
+      post:
+        Content-Type: "application/json; charset=utf-8"
+        Content-Length: "<dynamic>"
+        Authorization: "Bearer xoxb-EXAMPLE-TOKEN-NOT-REAL"
+    
+    server_headers:
+      Server: "envoy"
+      Date: "<dynamic>"
+      Content-Type: "application/json; charset=utf-8"
+      x-slack-req-id: "<dynamic>"
+      x-content-type-options: "nosniff"
+      x-xss-protection: "1; mode=block"
+      Strict-Transport-Security: "max-age=31536000; includeSubDomains"
+      Access-Control-Allow-Origin: "*"
+  
+  tls:
+    # Slack uses Chrome-like TLS
+    fingerprint: "chrome"
+    min_version: "1.2"
+    max_version: "1.3"
+  
+  timing:
+    # Slack has frequent polling for real-time updates
+    interval: 30
+    interval_variance: 15
+    jitter: 30
+    poll_timeout: 30
+  
+  metadata:
+    # Use Slack-style request ID
+    location: "header"
+    header_name: "x-slack-client-req-id"
+    encoding: "hex"
+

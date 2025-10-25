@@ -1,0 +1,81 @@
+# Amazon AWS SDK Profile
+# Mimics AWS SDK traffic for blending with cloud environments
+#
+# Use Cases:
+# - Cloud-hosted targets
+# - AWS infrastructure
+# - Environments with heavy AWS API traffic
+#
+# Based on: Real AWS SDK/CLI traffic patterns
+
+profile:
+  name: "Amazon AWS SDK"
+  author: "Sliver Team"
+  description: "Mimics Amazon AWS SDK HTTP traffic"
+  version: "1.0"
+  
+  http:
+    # AWS SDK User-Agent patterns
+    # Format: aws-sdk-{lang}/{version} ({runtime}; {os}; {arch})
+    user_agents:
+      - "aws-sdk-go/1.44.0 (go1.19; linux; amd64)"
+      - "aws-sdk-go/1.43.0 (go1.18; linux; amd64)"
+      - "aws-cli/2.9.0 Python/3.11.0 Linux/5.15.0-1022-aws exe/x86_64.ubuntu.22"
+      - "Boto3/1.26.0 Python/3.10.0 Linux/5.15.0-1022-aws Botocore/1.29.0"
+    
+    # AWS API endpoints (EC2 metadata service, S3, DynamoDB patterns)
+    uris:
+      get:
+        - "/"
+        - "/latest/meta-data/"
+        - "/latest/meta-data/instance-id"
+        - "/latest/dynamic/instance-identity/document"
+      post:
+        - "/"
+        - "/latest/api/token"
+    
+    headers:
+      common:
+        Accept: "*/*"
+        Accept-Encoding: "identity"  # AWS SDK typically doesn't request compression
+        Connection: "keep-alive"
+      
+      get:
+        # EC2 metadata service uses X-aws-ec2-metadata-token
+        X-aws-ec2-metadata-token: "AQAAAH+LvN8MwTdyOPJ0XLQ="
+        X-aws-ec2-metadata-token-ttl-seconds: "21600"
+      
+      post:
+        Content-Type: "application/x-amz-json-1.0"
+        X-Amz-Target: "DynamoDB_20120810.GetItem"
+        X-Amz-Date: "<dynamic>"
+        Authorization: "AWS4-HMAC-SHA256 Credential=AKIAIOSFODNN7EXAMPLE/..."
+        X-Amz-Content-Sha256: "<dynamic>"
+    
+    server_headers:
+      Server: "Server"
+      Date: "<dynamic>"
+      Content-Type: "text/plain"
+      Content-Length: "<dynamic>"
+      Connection: "keep-alive"
+      X-aws-request-id: "<dynamic>"
+  
+  tls:
+    # AWS services typically use Chrome-like TLS handshakes
+    fingerprint: "chrome"
+    min_version: "1.2"
+    max_version: "1.3"
+  
+  timing:
+    # AWS SDK calls are typically synchronous with quick retries
+    interval: 30
+    interval_variance: 10
+    jitter: 20
+    poll_timeout: 30
+  
+  metadata:
+    # Use AWS-style request ID header for metadata
+    location: "header"
+    header_name: "X-Amz-Request-Id"
+    encoding: "hex"
+

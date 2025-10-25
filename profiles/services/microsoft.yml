@@ -1,0 +1,89 @@
+# Microsoft Graph API Profile
+# Mimics Microsoft 365 / Graph API traffic
+#
+# Use Cases:
+# - Corporate networks
+# - Office 365 environments
+# - Microsoft-heavy infrastructure
+# - Azure deployments
+#
+# Based on: Microsoft Graph API HTTP patterns
+
+profile:
+  name: "Microsoft Graph API"
+  author: "Sliver Team"
+  description: "Mimics Microsoft Graph API traffic for Office 365"
+  version: "1.0"
+  
+  http:
+    # Microsoft SDK/CLI User-Agent patterns
+    user_agents:
+      - "Microsoft Graph Client/5.0 (Windows NT 10.0; Win64; x64)"
+      - "Azure-CLI/2.45.0 (Windows-10-10.0.19045-SP0)"
+      - "Microsoft-Graph-PowerShell/1.22.0 PowerShell/7.3.0"
+      - "az/2.45.0 azsdk-python-identity/1.12.0 Python/3.10.9 (Windows-10-10.0.19045-SP0)"
+    
+    # Graph API endpoints
+    uris:
+      get:
+        - "/v1.0/me"
+        - "/v1.0/me/messages"
+        - "/v1.0/users"
+        - "/v1.0/me/drive/root/children"
+        - "/v1.0/me/calendar/events"
+        - "/beta/me/presence"
+      post:
+        - "/v1.0/me/sendMail"
+        - "/v1.0/users/{id}/events"
+        - "/v1.0/me/messages"
+        - "/$batch"
+    
+    headers:
+      common:
+        Accept: "application/json"
+        Accept-Encoding: "gzip, deflate, br"
+        Accept-Language: "en-US,en;q=0.9"
+        Content-Type: "application/json"
+        ConsistencyLevel: "eventual"
+        User-Agent: "<from-list>"
+      
+      get:
+        Prefer: "outlook.timezone=\"UTC\""
+        If-None-Match: "W/\"etag-value\""
+      
+      post:
+        Authorization: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1..."
+        Content-Length: "<dynamic>"
+        client-request-id: "<dynamic>"
+        return-client-request-id: "true"
+    
+    server_headers:
+      Server: "Microsoft-IIS/10.0"
+      Date: "<dynamic>"
+      Content-Type: "application/json; odata.metadata=minimal"
+      OData-Version: "4.0"
+      request-id: "<dynamic>"
+      client-request-id: "<dynamic>"
+      x-ms-ags-diagnostic: "{\"ServerInfo\":{\"DataCenter\":\"...\"}}"
+      x-ms-resource-unit: "1"
+      Strict-Transport-Security: "max-age=31536000"
+  
+  tls:
+    # Microsoft services use modern TLS
+    fingerprint: "edge"  # Microsoft Edge fingerprint
+    min_version: "1.2"
+    max_version: "1.3"
+  
+  timing:
+    # Graph API polling varies by use case
+    interval: 90
+    interval_variance: 30
+    jitter: 25
+    poll_timeout: 90
+  
+  metadata:
+    # Use Microsoft-style request ID
+    location: "header"
+    header_name: "client-request-id"
+    encoding: "hex"
+

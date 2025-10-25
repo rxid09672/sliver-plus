@@ -1,0 +1,92 @@
+# Sliver Malleable C2 Profile Template
+# Copy this file and customize for your operational needs
+
+profile:
+  # === METADATA (Required) ===
+  name: "My Custom Profile"
+  author: "Your Name"
+  description: "Describe what service/traffic this mimics"
+  version: "1.0"
+  
+  # === HTTP CONFIGURATION ===
+  http:
+    # User-Agent strings (random selection per request)
+    user_agents:
+      - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+      - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+    
+    # URI patterns (separate for GET/POST)
+    uris:
+      get:
+        - "/"
+        - "/api/v1/status"
+        - "/health"
+      post:
+        - "/api/v1/data"
+        - "/api/v1/sync"
+    
+    # HTTP headers (order matters for fingerprinting)
+    headers:
+      # Headers for ALL requests
+      common:
+        Accept: "*/*"
+        Accept-Encoding: "gzip, deflate, br"
+        Accept-Language: "en-US,en;q=0.9"
+        Connection: "keep-alive"
+      
+      # Additional headers for GET requests only
+      get:
+        Cache-Control: "no-cache"
+      
+      # Additional headers for POST requests only
+      post:
+        Content-Type: "application/json"
+    
+    # Server response headers (optional)
+    server_headers:
+      Server: "nginx/1.18.0"
+      X-Content-Type-Options: "nosniff"
+  
+  # === TLS FINGERPRINTING ===
+  tls:
+    # Browser to mimic: chrome, firefox, ios, android, edge, safari
+    fingerprint: "chrome"
+    
+    # Optional: Constrain TLS versions
+    min_version: "1.2"
+    max_version: "1.3"
+  
+  # === TIMING CONFIGURATION ===
+  timing:
+    # Base callback interval (seconds)
+    interval: 60
+    
+    # Random variance added to interval (seconds)
+    interval_variance: 20
+    
+    # Jitter percentage (0-99)
+    jitter: 30
+    
+    # Long poll timeout (seconds)
+    poll_timeout: 60
+  
+  # === METADATA ENCODING ===
+  metadata:
+    # Where to place C2 metadata: header, cookie, uri-param, uri-append, body
+    location: "header"
+    
+    # If location=header, specify header name
+    header_name: "X-Request-ID"
+    
+    # Encoding: none, base64, hex, netbios
+    encoding: "base64"
+  
+  # === EVASION (Optional/Future) ===
+  evasion:
+    # Prepend legitimate content to requests
+    traffic_masking:
+      enabled: false
+      content_type: "javascript"
+      min_size: 1024
+      max_size: 8192
+
