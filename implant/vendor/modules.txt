@@ -66,6 +66,10 @@ github.com/miekg/dns
 # github.com/moloch--/memmod v0.0.0-20230225130813-fd77d905589e
 ## explicit; go 1.17
 github.com/moloch--/memmod
+# github.com/refraction-networking/utls v1.8.1
+## explicit; go 1.20
+github.com/refraction-networking/utls
+github.com/refraction-networking/utls/dicttls
 # github.com/pmezard/go-difflib v1.0.0
 ## explicit
 github.com/pmezard/go-difflib/difflib
