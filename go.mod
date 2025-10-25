@@ -36,6 +36,7 @@ require (
 	github.com/ncruces/go-sqlite3 v0.29.1
 	github.com/reeflective/console v0.1.25
 	github.com/reeflective/readline v1.1.3
+	github.com/refraction-networking/utls v1.8.1
 	github.com/rsteube/carapace v0.50.2
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.10.1
@@ -149,7 +150,6 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus-community/pro-bing v0.4.0 // indirect
-	github.com/refraction-networking/utls v1.8.1 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/rsteube/carapace-shlex v0.1.2 // indirect
