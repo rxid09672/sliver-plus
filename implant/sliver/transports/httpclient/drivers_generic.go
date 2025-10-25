@@ -30,6 +30,9 @@ import (
 func GetHTTPDriver(origin string, secure bool, opts *HTTPOptions) (HTTPDriver, error) {
 	switch opts.Driver {
 
+	case utlsDriver:
+		return UTLSHTTPDriver(origin, secure, opts)
+
 	case goHTTPDriver:
 		return GoHTTPDriver(origin, secure, opts)
 

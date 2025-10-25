@@ -48,6 +48,7 @@ import (
 
 var (
 	goHTTPDriver = "go"
+	utlsDriver   = "utls"
 
 	userAgent          = "{{GenerateUserAgent}}"
 	NonceQueryArgChars = "{{.HTTPC2ImplantConfig.NonceQueryArgChars}}" // "abcdefghijklmnopqrstuvwxyz"
@@ -77,6 +78,9 @@ type HTTPOptions struct {
 	NoFallback           bool
 	DisableUpgradeHeader bool
 	HostHeader           string
+
+	// TLS Fingerprinting
+	TLSFingerprint string
 
 	ProxyConfig   string
 	ProxyUsername string

