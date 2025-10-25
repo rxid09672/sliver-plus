@@ -221,6 +221,33 @@ func parseCompileFlags(cmd *cobra.Command, con *console.SliverClient) (string, *
 	}
 	c2s = append(c2s, httpC2...)
 
+	// Parse TLS fingerprint flag (for HTTP C2 only)
+	tlsFingerprint, _ := cmd.Flags().GetString("tls-fingerprint")
+	var enableTLSFingerprinting bool
+	if tlsFingerprint != "" {
+		// Validate fingerprint value
+		validFingerprints := []string{"chrome", "firefox", "edge", "ios", "safari", "randomized", "randomized-alpn", "randomized-noalpn"}
+		isValid := false
+		for _, valid := range validFingerprints {
+			if tlsFingerprint == valid {
+				isValid = true
+				break
+			}
+		}
+		if !isValid {
+			con.PrintErrorf("Invalid TLS fingerprint: %s\n", tlsFingerprint)
+			con.PrintErrorf("Valid options: chrome, firefox, edge, ios, safari, randomized, randomized-alpn, randomized-noalpn\n")
+			return "", nil
+		}
+		// TLS fingerprinting requires HTTP C2
+		if len(httpC2) == 0 {
+			con.PrintWarnf("TLS fingerprinting requires HTTP C2, flag will be ignored\n")
+			tlsFingerprint = ""
+		} else {
+			enableTLSFingerprinting = true
+		}
+	}
+
 	dnsC2F, _ := cmd.Flags().GetString("dns")
 	dnsC2, err := ParseDNSc2(dnsC2F)
 	if err != nil {
@@ -431,6 +458,10 @@ func parseCompileFlags(cmd *cobra.Command, con *console.SliverClient) (string, *
 
 		DebugFile:        debugFile,
 		HTTPC2ConfigName: c2Profile,
+
+		// TLS Fingerprinting
+		EnableTLSFingerprinting: enableTLSFingerprinting,
+		TLSFingerprint:          tlsFingerprint,
 	}
 
 	// Add build diversity configuration if enabled

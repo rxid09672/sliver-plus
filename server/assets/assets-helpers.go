@@ -475,6 +475,8 @@ func xorPBRawBytes(src []byte) []byte {
 			// add an ast.AssignStmt at the top of the function Body
 			// that calls the xor function on the file_sliverpb_sliver_proto_rawDesc object
 			if node.Name.Name == sliverPbProtoInitFuncName {
+				// For new protoc format (string), convert: rawDesc = string(xor([]byte(rawDesc), key))
+				// This handles both old format ([]byte) and new format (string concat)
 				newStmt := &ast.AssignStmt{
 					Lhs: []ast.Expr{
 						ast.NewIdent(sliverpbVarName),
@@ -482,10 +484,20 @@ func xorPBRawBytes(src []byte) []byte {
 					Tok: token.ASSIGN,
 					Rhs: []ast.Expr{
 						&ast.CallExpr{
-							Fun: ast.NewIdent("xor"),
+							Fun: ast.NewIdent("string"),
 							Args: []ast.Expr{
-								ast.NewIdent(sliverpbVarName),
-								ast.NewIdent("xorKey"),
+								&ast.CallExpr{
+									Fun: ast.NewIdent("xor"),
+									Args: []ast.Expr{
+										&ast.CallExpr{
+											Fun: ast.NewIdent("[]byte"),
+											Args: []ast.Expr{
+												ast.NewIdent(sliverpbVarName),
+											},
+										},
+										ast.NewIdent("xorKey"),
+									},
+								},
 							},
 						},
 					},
@@ -500,13 +512,25 @@ func xorPBRawBytes(src []byte) []byte {
 				case *ast.ValueSpec:
 					for _, id := range spec.Names {
 						if id.Name == sliverpbVarName {
-							values := spec.Values[0].(*ast.CompositeLit).Elts
-							// XOR each value of the slice
-							for i, v := range values {
-								elt := v.(*ast.BasicLit)
-								elt.Value = xorByte(elt.Value, xorKey[i%len(xorKey)])
+							// Handle both old and new protobuf formats
+							if len(spec.Values) > 0 {
+								switch valueNode := spec.Values[0].(type) {
+								case *ast.CompositeLit:
+									// Old format: var rawDesc = []byte{0x01, 0x02, ...}
+									values := valueNode.Elts
+									for i, v := range values {
+										elt := v.(*ast.BasicLit)
+										elt.Value = xorByte(elt.Value, xorKey[i%len(xorKey)])
+									}
+								case *ast.BinaryExpr:
+									// New format: const rawDesc = "" + "\n" + "\x15sliver..."
+									// Change const → var so we can XOR at runtime
+									node.Tok = token.VAR
+									// Will XOR in init() function added later
+								default:
+									// Unknown format - skip XOR obfuscation
+								}
 							}
-
 						}
 					}
 				default:

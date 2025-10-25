@@ -322,6 +322,9 @@ func coreImplantFlags(name string, cmd *cobra.Command) {
 		f.StringP("named-pipe", "p", "", "named-pipe connection strings")
 		f.StringP("tcp-pivot", "i", "", "tcp-pivot connection strings")
 
+		// TLS Fingerprinting
+		f.StringP("tls-fingerprint", "", "", "TLS fingerprint (chrome, firefox, edge, ios, safari, randomized, randomized-alpn, randomized-noalpn)")
+
 		f.Uint32P("key-exchange", "X", DefaultWGKeyExPort, "wg key-exchange port")
 		f.Uint32P("tcp-comms", "T", DefaultWGNPort, "wg c2 comms port")
 
